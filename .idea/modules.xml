@@ -2,9 +2,12 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/KnobSelector.iml" filepath="$PROJECT_DIR$/KnobSelector.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Knob.iml" filepath="$PROJECT_DIR$/Knob.iml" />
+      <module fileurl="file://C:\Users\USER\Documents\Knob\KnobSelector.iml" filepath="C:\Users\USER\Documents\Knob\KnobSelector.iml" />
       <module fileurl="file://$PROJECT_DIR$/knoblibrary/knoblibrary.iml" filepath="$PROJECT_DIR$/knoblibrary/knoblibrary.iml" />
+      <module fileurl="file://C:\Users\USER\Documents\Knob\knoblibrary\knoblibrary.iml" filepath="C:\Users\USER\Documents\Knob\knoblibrary\knoblibrary.iml" />
       <module fileurl="file://$PROJECT_DIR$/knobsample/knobsample.iml" filepath="$PROJECT_DIR$/knobsample/knobsample.iml" />
+      <module fileurl="file://C:\Users\USER\Documents\Knob\knobsample\knobsample.iml" filepath="C:\Users\USER\Documents\Knob\knobsample\knobsample.iml" />
     </modules>
   </component>
 </project>

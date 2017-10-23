@@ -1,5 +1,6 @@
 package it.beppi.knoblibrary;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
@@ -49,6 +50,8 @@ public class Knob extends View {
     public static final int BALLONANIMATION_POP = 0;
     public static final int BALLONANIMATION_SCALE = 1;
     public static final int BALLONANIMATION_FADE = 2;
+    private int horizontalMultiplier = 1;
+    private int verticalMultiplier = 6;
 
     // constructors
     public Knob(Context context) {
@@ -398,7 +401,7 @@ public class Knob extends View {
 
         knobCenterRelativeRadius = typedArray.getFloat(R.styleable.Knob_kKnobCenterRelativeRadius, knobCenterRelativeRadius);
         knobCenterColor = typedArray.getColor(R.styleable.Knob_kKnobCenterColor, knobCenterColor);
-        
+
         knobDrawableRes = typedArray.getResourceId(R.styleable.Knob_kKnobDrawable, knobDrawableRes);
         knobDrawableRotates = typedArray.getBoolean(R.styleable.Knob_kKnobDrawableRotates, knobDrawableRotates);
 
@@ -483,6 +486,7 @@ public class Knob extends View {
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     void initListeners() {
         this.setOnClickListener(new OnClickListener() {
             @Override
@@ -509,13 +513,13 @@ public class Knob extends View {
                         if (y - swipeY > swipeSensibilityPixels) {
                             swipeY = y;
                             swipeing = true;
-                            decreaseValue();
+                            decreaseValue(verticalMultiplier);
                             return true;
                         }
                         else if (swipeY - y > swipeSensibilityPixels) {
                             swipeY = y;
                             swipeing = true;
-                            increaseValue();
+                            increaseValue(verticalMultiplier);
                             return true;
                         }
                     }
@@ -536,13 +540,13 @@ public class Knob extends View {
                         if (x - swipeX > swipeSensibilityPixels) {
                             swipeX = x;
                             swipeing = true;
-                            increaseValue();
+                            increaseValue(horizontalMultiplier);
                             return true;
                         }
                         else if (swipeX - x > swipeSensibilityPixels) {
                             swipeX = x;
                             swipeing = true;
-                            decreaseValue();
+                            decreaseValue(horizontalMultiplier);
                             return true;
                         }
                     }
@@ -560,20 +564,21 @@ public class Knob extends View {
                         swipeY = y;
                         swipeing = false;
                         disallowParentToHandleTouchEvents(); // needed when Knob's parent is a ScrollView
-                    }
-                    else if (action == MotionEvent.ACTION_MOVE) {
+                    } else if (action == MotionEvent.ACTION_MOVE) {
+                        int multiplier = calculateValueMultiplier(x, y);
+
                         if (x - swipeX > swipeSensibilityPixels || swipeY - y > swipeSensibilityPixels ) {
                             swipeX = x;
                             swipeY = y;
                             swipeing = true;
-                            increaseValue();
+                            increaseValue(multiplier);
                             return true;
                         }
                         else if (swipeX - x > swipeSensibilityPixels || y - swipeY > swipeSensibilityPixels) {
                             swipeX = x;
                             swipeY = y;
                             swipeing = true;
-                            decreaseValue();
+                            decreaseValue(multiplier);
                             return true;
                         }
                     }
@@ -616,6 +621,21 @@ public class Knob extends View {
                                }});
     }
 
+    private int calculateValueMultiplier(int x, int y) {
+        final boolean horizontal = x - swipeX > swipeSensibilityPixels || swipeX - x > swipeSensibilityPixels;
+        final boolean vertical = y - swipeY > swipeSensibilityPixels || swipeY - y > swipeSensibilityPixels;
+
+        int multiplier = 1;
+
+        if (horizontal && vertical)
+            multiplier = Math.max(horizontalMultiplier, verticalMultiplier);
+        else if (horizontal)
+            multiplier = horizontalMultiplier;
+        else if (vertical)
+            multiplier = verticalMultiplier;
+        return multiplier;
+    }
+
     void createPopupMenu(View view) {
         PopupMenu mPopupMenu = new PopupMenu(getContext(), view);
         if (balloonValuesArray == null)
@@ -653,14 +673,14 @@ public class Knob extends View {
     // behaviour
 
     public void toggle(boolean animate) {
-        increaseValue(animate);
+        increaseValue(1, animate);
     }
     public void toggle() {
         toggle(animation);
     }
 
     public void inverseToggle(boolean animate) {
-        decreaseValue(animate);
+        decreaseValue(1, animate);
     }
     public void inverseToggle() { inverseToggle(animation);}
 
@@ -674,25 +694,26 @@ public class Knob extends View {
         if (actualState < 0) actualState += numberOfStates;
     }
 
-    public void increaseValue(boolean animate) {
+    public void increaseValue(int stateIncreaseMultiplier, boolean animate) {
         previousState = currentState;
-        currentState = (currentState+1); // % numberOfStates;
+        currentState = (currentState + stateIncreaseMultiplier); // % numberOfStates;
         if (!freeRotation && currentState >= numberOfStates) currentState = numberOfStates-1;
         calcActualState();
         if(listener != null) listener.onState(actualState);
         takeEffect(animate);
     }
-    public void increaseValue() { increaseValue(animation);}
 
-    public void decreaseValue(boolean animate) {
+    public void increaseValue(int stateIncreaseMultiplier) { increaseValue(stateIncreaseMultiplier, animation);}
+
+    public void decreaseValue(int stateIncreaseMultiplier, boolean animate) {
         previousState = currentState;
-        currentState = (currentState-1); // % numberOfStates;
+        currentState = (currentState-stateIncreaseMultiplier); // % numberOfStates;
         if (!freeRotation && currentState<0) currentState = 0;
         calcActualState();
         if(listener != null) listener.onState(actualState);
         takeEffect(animate);
     }
-    public void decreaseValue() { decreaseValue(animation);}
+    public void decreaseValue(int stateIncreaseMultiplier) { decreaseValue(stateIncreaseMultiplier, animation);}
 
     public void setValueByAngle(double angle, boolean animate) {  // sets the value of the knob given an angle instead of a state
         if (numberOfStates <= 1)
